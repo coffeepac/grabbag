@@ -55,10 +55,10 @@ def build_header(headerrow, sourceheader):
     if sourceheader[0].startswith('xxCOLORxx'):
         return False
     while idx < len(sourceheader):
-        if sourceheader[idx] != "":
+        if re.match(".*\w.*",sourceheader[idx]):
             carry_cell = sourceheader[idx]
 
-        headerrow[idx] += " " + carry_cell
+        headerrow[idx] += " | " + carry_cell
         idx += 1
 
     return True
@@ -88,7 +88,7 @@ def process_row(headerrow, procedtable, datarow, extraneous):
     didx = 1
     while didx < len(datarow):
         datarow[didx] = re.sub('xxCOLORxx', '', datarow[didx])
-        if datarow[didx] != " ":
+        if re.match(".*\w.*",datarow[didx]):
             is_extraneous=False
             is_clearing_row=False
             if re.match('[a-zA-Z]',datarow[didx]):    #  catches 'located on ?? section of other report'
@@ -96,12 +96,15 @@ def process_row(headerrow, procedtable, datarow, extraneous):
             else:
                 pctbl_key = headerrow[didx]
                 for excel in extraneous:
-                    pctbl_key += " " + excel
+                    pctbl_key += " | " + excel
+
+                #  remove new lines, fucking with my chi
+                pctbl_key = re.sub("\n", " ", pctbl_key)
 
                 if pctbl_key not in procedtable:
-                    procedtable[pctbl_key] = datarow[didx]
+                    procedtable[pctbl_key] = datarow[didx] # re.sub("\n", " ", datarow[didx])
                 else:
-                    procedtable[pctbl_key] += datarow[didx]
+                    procedtable[pctbl_key] += datarow[didx] # re.sub("\n", " ", datarow[didx])
         didx += 1
             
     if not is_extraneous:
@@ -134,7 +137,6 @@ def process_table(tbl_list, all_elems):
 #  MAIN CODE
 report_fd = open("dat-files/STAR_GAS_PARTNERS_LP_10q_2011q1.dat")
 report_data = report_fd.read()
-re.sub('<BR>', ' ', report_data)
 
 all_tables = get_tables(report_data)
 all_elems = dict()

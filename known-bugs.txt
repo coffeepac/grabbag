@@ -1,0 +1,19 @@
+1. correctly passing an intermediate header to all below rows.  example:
+
+  Parts:
+  item1         val1
+  item2         val2
+
+this should end up as
+
+  Parts: item1 val1
+  Parts: item2 val2
+
+however, since there is no indentation clue, we end up:
+
+  Parts: item1 val1
+  item2 val2
+
+Found during analysing a table with both dollars and stock units.  ended up with a key clash.  specifically the table is:
+
+  STAR_GAS_PARTNERS_LP_10q_2011q1.dat - Basic and Diluted Earnings Per Limited Partner:
