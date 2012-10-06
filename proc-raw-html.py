@@ -58,7 +58,8 @@ def build_header(headerrow, sourceheader):
         if re.match(".*\w.*",sourceheader[idx]):
             carry_cell = sourceheader[idx]
 
-        headerrow[idx] += " | " + carry_cell
+        if idx < len(headerrow):
+            headerrow[idx] += " | " + carry_cell
         idx += 1
 
     return True
@@ -121,7 +122,7 @@ def process_table(tbl_list, all_elems):
     extraneous = list()
     header_flip = True
     for row in tbl_list:
-        if header_flip:
+        if header_flip and len(row) > 0:
             header_flip = build_header(headerrow, row)
             #  this algorithm grabs one row to many to flip from header to data row
             #  it sees the data row in the build header function so we need to then
@@ -129,24 +130,36 @@ def process_table(tbl_list, all_elems):
             if not header_flip:
                 extraneous = process_row(headerrow, all_elems, row, extraneous)
 
-        else:
+        elif not header_flip:
             extraneous = process_row(headerrow, all_elems, row, extraneous)
 
     return all_elems 
 
 #  MAIN CODE
-report_fd = open("dat-files/STAR_GAS_PARTNERS_LP_10q_2011q1.dat")
-report_data = report_fd.read()
+for html_report in os.listdir("dat-files"):
+    #report_fd = open("dat-files/STAR_GAS_PARTNERS_LP_10q_2011q1.dat")
+    print "Beginning %s" % html_report
+    report_fd = open("dat-files/" + html_report)
+    report_data = report_fd.read()
+    has_data=False
 
-all_tables = get_tables(report_data)
-all_elems = dict()
-for tbl in all_tables:
-    tbl_list = makelist(tbl)
-    tbl_list_clean = [[re.sub('&nbsp;',' ',str(x)) for x in y] for y in tbl_list]
-    process_table(tbl_list_clean, all_elems)
+    all_tables = get_tables(report_data)
+    all_elems = dict()
+    for tbl in all_tables:
+        tbl_list = makelist(tbl)
+        if len(tbl_list) != 0:
+            has_data=True
+            tbl_list_clean = [[re.sub('&nbsp;|&#160;',' ',str(x)) for x in y] for y in tbl_list]
+            process_table(tbl_list_clean, all_elems)
 
-output_fd = open("dict-dump.txt", "w")
-for k,v in all_elems.iteritems():
-    output_fd.write("Key: %s \t Value: %s\n" % (k, v))
+
+
+    if has_data:
+        #output_fd = open("dict-dump.txt", "w")
+        output_fd = open("parsed-dat-files/" + html_report, "w")
+        for k,v in all_elems.iteritems():
+            output_fd.write("Key: %s \t Value: %s\n" % (k, v))
+    else:
+        print "Fuck you."
 
 print "DONE"
