@@ -28,6 +28,9 @@ def makelist(table):
         result.append([])
         allcols = row.findAll('td')
         for col in allcols:
+            # autogenned html, sometimes color is in the td, not the tr
+            if col.has_key('bgcolor'):
+                hascolor=True
             thetext=""
             if hascolor:
                 thetext="xxCOLORxx"
@@ -86,9 +89,9 @@ def process_row(headerrow, procedtable, datarow, extraneous):
     else:
         extraneous.append(datarow[0])
 
-    didx = 1
-    while didx < len(datarow):
-        datarow[didx] = re.sub('xxCOLORxx', '', datarow[didx])
+    #  starts at 1 because 0 is always part of extraneous
+    for didx in range(1, len(datarow)):
+        datarow[didx] = re.sub('xxCOLORxx|\n', '', datarow[didx])
         if re.match(".*\w.*",datarow[didx]):
             is_extraneous=False
             is_clearing_row=False
@@ -103,10 +106,9 @@ def process_row(headerrow, procedtable, datarow, extraneous):
                 pctbl_key = re.sub("\n", " ", pctbl_key)
 
                 if pctbl_key not in procedtable:
-                    procedtable[pctbl_key] = datarow[didx] # re.sub("\n", " ", datarow[didx])
+                    procedtable[pctbl_key] = datarow[didx] 
                 else:
-                    procedtable[pctbl_key] += datarow[didx] # re.sub("\n", " ", datarow[didx])
-        didx += 1
+                    procedtable[pctbl_key] += datarow[didx]
             
     if not is_extraneous:
         extraneous.pop()
@@ -137,29 +139,31 @@ def process_table(tbl_list, all_elems):
 
 #  MAIN CODE
 for html_report in os.listdir("dat-files"):
-    #report_fd = open("dat-files/STAR_GAS_PARTNERS_LP_10q_2011q1.dat")
-    print "Beginning %s" % html_report
-    report_fd = open("dat-files/" + html_report)
-    report_data = report_fd.read()
-    has_data=False
+    #if html_report == "ADVENT_SOFTWARE_INC_DE_10q_2011q1.dat":
+    if True:
+        #report_fd = open("dat-files/STAR_GAS_PARTNERS_LP_10q_2011q1.dat")
+        print "Beginning %s" % html_report
+        report_fd = open("dat-files/" + html_report)
+        report_data = report_fd.read()
+        has_data=False
 
-    all_tables = get_tables(report_data)
-    all_elems = dict()
-    for tbl in all_tables:
-        tbl_list = makelist(tbl)
-        if len(tbl_list) != 0:
-            has_data=True
-            tbl_list_clean = [[re.sub('&nbsp;|&#160;',' ',str(x)) for x in y] for y in tbl_list]
-            process_table(tbl_list_clean, all_elems)
+        all_tables = get_tables(report_data)
+        all_elems = dict()
+        for tbl in all_tables:
+            tbl_list = makelist(tbl)
+            if len(tbl_list) != 0:
+                has_data=True
+                tbl_list_clean = [[re.sub('&nbsp;|&#160;',' ',str(x)) for x in y] for y in tbl_list]
+                process_table(tbl_list_clean, all_elems)
 
 
 
-    if has_data:
-        #output_fd = open("dict-dump.txt", "w")
-        output_fd = open("parsed-dat-files/" + html_report, "w")
-        for k,v in all_elems.iteritems():
-            output_fd.write("Key: %s \t Value: %s\n" % (k, v))
-    else:
-        print "Fuck you."
+        if has_data:    
+            #output_fd = open("dict-dump.txt", "w")
+            output_fd = open("parsed-dat-files/" + html_report, "w")
+            for k,v in all_elems.iteritems():
+                output_fd.write("Key: %s \t Value: %s\n" % (k, v))
+        else:
+            print "Fuck you."
 
 print "DONE"
