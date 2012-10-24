@@ -1,5 +1,18 @@
 #!/usr/bin/env python
 
+'''
+This script is an example project as part of an application
+to work at socrata.  
+
+The goal is to accept two dates of the format [H]H:MM AM|PM 
+on the command line and calculate the degrees that the minute
+hand of the first time would have to travel to reach the
+second time.  Its a neat little problem but probably not 
+useful in any general sense.
+
+Written by Pat Christopher, October 2012
+'''
+
 import sys, re
 
 class InputTime:
@@ -7,10 +20,7 @@ class InputTime:
 		self.raw_time = t_input
 		csplit_raw = t_input.split(':')
 		if len(csplit_raw) > 0:
-			if csplit_raw[0] == "12":
-				self.hours = "0"
-			else:
-				self.hours = csplit_raw[0]
+			self.hours = csplit_raw[0]
 		if len(csplit_raw) > 1:
 			space_split = csplit_raw[1].split(' ')
 			self.minutes = space_split[0]
@@ -18,31 +28,26 @@ class InputTime:
 				self.midday = space_split[1]
 
 	#  check if the time passed in was valid
-	#  valid is hourse from 0-23, minutes from 0-59 and AM or PM
+	#  valid is hours from 1-12, minutes from 0-59 and AM or PM
 	#    if any of the above are not there, date is not valid
 	def is_valid(self):
 		valid = True
-		if hasattr(self, 'hours'): 
-			if not re.match('^\d{1,2}$', self.hours):
+        #  check for existance
+		if hasattr(self, 'hours') and hasattr(self, 'minutes') and hasattr(self, 'midday'): 
+            #  hours valid?
+			if not re.match('^\d{1,2}$', self.hours) or int(self.hours) > 12 or int(self.hours) < 1:
 				valid = False
-			elif int(self.hours) > 23:
-				valid = False
-		else:
-			valid = False
 
-		if hasattr(self, 'minutes'):
-			if not re.match('^\d{2}$', self.minutes):
+            #  minutes valid?
+			if not re.match('^\d{2}$', self.minutes) or int(self.minutes) > 59:
 				valid = False
-			elif int(self.minutes) > 59:
-				valid = False
-		else:
-			valid = False
 
-		if hasattr(self, 'midday'):
+            #  midday valid?
 			if not re.match('^AM|PM$', self.midday.upper()):
 				valid = False
 		else:
 			valid = False
+
 		return valid
 
 	#  convert the passed-in time to absolute degrees
@@ -50,11 +55,12 @@ class InputTime:
 	def degrees(self):
 		degrees = -1
 		if self.is_valid:
+			degrees = int(self.hours) * 360 + int(self.minutes) * 6
+			#  modulo operation removes oddity of 12 being less then one
+			degrees = degrees % (12 * 360)
+
 			if self.midday == 'PM':
-				degrees = 12 * 360
-			else:
-				degrees = 0
-			degrees += int(self.hours) * 360 + int(self.minutes) * 6
+				degrees += 12 * 360
 
 		return degrees
 
@@ -78,9 +84,9 @@ def parse_inputs(raw_args):
 
 	#  check both times are valid
 	if not time_one.is_valid():
-		print "The first time %s is not a valid time.  Must be of format: [H]H:MM [AM|PM], where [H] is from 1 to 12 and MM is from 01 to 59" % time_one.raw_time
+		print "The first time %s is not a valid time.  Must be of format: [H]H:MM [AM|PM], where [H] is from 1 to 12 and MM is from 00 to 59" % time_one.raw_time
 	if not time_two.is_valid():
-		print "The second time %s is not a valid time.  Must be of format: [H]H:MM [AM|PM], where [H] is from 1 to 12 and MM is from 01 to 59" % time_two.raw_time
+		print "The second time %s is not a valid time.  Must be of format: [H]H:MM [AM|PM], where [H] is from 1 to 12 and MM is from 00 to 59" % time_two.raw_time
 
 	return time_one, time_two
 
