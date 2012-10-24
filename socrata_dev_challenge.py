@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 import sys, re
 
@@ -60,6 +60,11 @@ class InputTime:
 
 #  its not clear if spaces are allowed on the command
 #  so deal with or without them
+def print_help():
+    print ("this script expects two arguments like so:\n"
+           "  ./socrata_dev_challenge.py [H]H:MM AM|PM [H]H:MM AM|PM\n"
+           "you may enclose each time in quote but you don't need to")
+
 def parse_inputs(raw_args):
 	if len(raw_args) == 4:
 		time_one = InputTime(raw_args[0] + ' ' + raw_args[1])
@@ -68,7 +73,8 @@ def parse_inputs(raw_args):
 		time_one = InputTime(raw_args[0])
 		time_two = InputTime(raw_args[1])
 	else:
-		raise Exception("Attempted to process %d arguments.  I don't know what to do with that.  Can only handle 2 or 4" % len(raw_args))
+		print_help()
+		sys.exit(1)
 
 	#  check both times are valid
 	if not time_one.is_valid():
