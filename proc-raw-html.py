@@ -20,6 +20,24 @@ import BeautifulSoup
 #  to find when data rows begin
 def makelist(table):
     result = []
+
+    #  check for if this is the 'instrumental' table
+    for sib in table.fetchNextSiblings():
+#        print dir(sib) 
+#        print sib.__class__
+#        print sib
+        if sib.name=='table':
+            break
+        if sib.find(text=re.compile(".*consolidated balance sheet.*")):
+            print "Found one: "
+            print table
+            print sib.name
+    for sib in table.fetchPreviousSiblings():
+        if sib.name=='table':
+            break
+        if sib.find(text=re.compile(".*consolidated balance sheet.*")):
+            print "Found one"
+            print table
     allrows = table.findAll('tr')
     for row in allrows:
         hascolor=False
