@@ -18,6 +18,8 @@ import BeautifulSoup
 #  
 #  also prepends 'xxCOLORxx' to rows with a color.  this is used later
 #  to find when data rows begin
+#
+#    there are two tables, consolidated balance sheet & CONSOLIDATED STATEMENTS OF OPERATIONS (UNAUDITED) or another.  FUUUU
 def makelist(table):
     result = []
 
