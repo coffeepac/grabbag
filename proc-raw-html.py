@@ -18,28 +18,9 @@ import BeautifulSoup
 #  
 #  also prepends 'xxCOLORxx' to rows with a color.  this is used later
 #  to find when data rows begin
-#
-#    there are two tables, consolidated balance sheet & CONSOLIDATED STATEMENTS OF OPERATIONS (UNAUDITED) or another.  FUUUU
 def makelist(table):
     result = []
 
-    #  check for if this is the 'instrumental' table
-    for sib in table.fetchNextSiblings():
-#        print dir(sib) 
-#        print sib.__class__
-#        print sib
-        if sib.name=='table':
-            break
-        if sib.find(text=re.compile(".*consolidated balance sheet.*")):
-            print "Found one: "
-            print table
-            print sib.name
-    for sib in table.fetchPreviousSiblings():
-        if sib.name=='table':
-            break
-        if sib.find(text=re.compile(".*consolidated balance sheet.*")):
-            print "Found one"
-            print table
     allrows = table.findAll('tr')
     for row in allrows:
         hascolor=False
